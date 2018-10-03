@@ -58,7 +58,7 @@ local function evaluate_set(ma_set_id, sc_set_code, progress_fraction)
         local data = json:decode(response)
         if data['object'] == 'error' then error('Error ' .. data['status'] .. ': ' .. data['details']) end
 
-        for i, card in ipairs(data['data']) do
+        for _, card in ipairs(data['data']) do
             -- TODO handle scryfall card language
             local regular_price = card['usd']
             local foil_price = 0
@@ -75,6 +75,7 @@ local function evaluate_set(ma_set_id, sc_set_code, progress_fraction)
 
             -- TODO pass lang id
             -- TODO check result (modified num)
+            -- TODO use name substitution for split cards and stuff
             ma.SetPrice(ma_set_id, 1, card['name'], '*', regular_price, foil_price, object_type)
             add_progress(progress_fraction * 1 / data['total_cards'])
         end
@@ -96,6 +97,7 @@ function ImportPrice(foil_string, langs_to_import, sets_to_import)
             local num_codes = count(set_codes)
             if num_codes == 0 then add_progress(set_progress_fraction) end
             for _, set_code in pairs(set_codes) do
+                -- TODO pass array of set codes and use e:s1,s2,s3 syntax (do not forget to sort sets)
                 evaluate_set(set_id, set_code, set_progress_fraction / num_codes)
             end
         end
