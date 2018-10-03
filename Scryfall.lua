@@ -27,15 +27,30 @@ local json = load_library('JSON')
 
 local SC_API_URL = 'https://api.scryfall.com'
 local MY_API_URL = 'http://151.248.120.179/api/scryfall'
-local SCRYFALL_SET_CODES = json:decode(read_file('scryfall_set_codes.json'))
 
-local function evaluate_set(set_id, set_code)
-    local lang_id = 1 --TODO ZALEPA
+local SC_SET_CODES = json:decode(read_file('scryfall_set_codes.json'))
+-- TODO tokens and stuff
+local MA_OBJECT_TYPES = {
+    card = 1
+}
+
+local g_progress_title = ''
+local g_progress_value = 0
+
+local function add_progress(value)
+    g_progress_value = g_progress_value + value
+    ma.SetProgress(g_progress_title, g_progress_value)
+end
+
+local function display_string(value)
+    g_progress_title = value
+    ma.SetProgress(g_progress_title, g_progress_value)
+end
+
+local function evaluate_set(ma_set_id, sc_set_code, progress_fraction)
     local more = true
-    local url = MY_API_URL .. '/cards/search?q=e:' .. set_code
+    local url = MY_API_URL .. '/cards/search?q=e:' .. sc_set_code
     while more do
-        -- TODO log each batch
-        -- TODO log set
         sleep(100)
 
         local response = ma.GetUrl(url)
@@ -43,10 +58,25 @@ local function evaluate_set(set_id, set_code)
         local data = json:decode(response)
         if data['object'] == 'error' then error('Error ' .. data['status'] .. ': ' .. data['details']) end
 
-        -- TODO track progress by card and page num
-        for _, card in ipairs(data['data']) do
-            -- TODO review all card fields and use some of them
-            ma.SetPrice(set_id, lang_id, card['name'], '*', card['usd'], 0)
+        for i, card in ipairs(data['data']) do
+            -- TODO handle scryfall card language
+            local regular_price = card['usd']
+            local foil_price = 0
+            if card['foil'] and not card['nonfoil'] then
+                foil_price = regular_price
+                regular_price = 0
+            end
+
+            local object_type = MA_OBJECT_TYPES[card['object']]
+            if object_type == nil then
+                object_type = 0
+                ma.Log('Unknown object type ' .. card['object'] .. ' for card ' .. card['name'] .. ' in set ' .. card['set_name'])
+            end
+
+            -- TODO pass lang id
+            -- TODO check result (modified num)
+            ma.SetPrice(ma_set_id, 1, card['name'], '*', regular_price, foil_price, object_type)
+            add_progress(progress_fraction * 1 / data['total_cards'])
         end
 
         more = data['has_more']
@@ -54,27 +84,19 @@ local function evaluate_set(set_id, set_code)
     end
 end
 
+-- TODO handle langs_to_import, foil_string
 function ImportPrice(foil_string, langs_to_import, sets_to_import)
-    -- TODO handle languages
-    -- TODO handle foil_string
-    -- if foil_string == 'O' then return end
-
-    local progress = 0
-    local set_progress_part = 100.0 / count(sets_to_import)
-    ma.Log(set_progress_part)
+    local set_progress_fraction = 100.0 / count(sets_to_import)
     for set_id, set_name in pairs(sets_to_import) do
-        local set_codes = SCRYFALL_SET_CODES[tostring(set_id)]
+        display_string(set_name)
+        local set_codes = SC_SET_CODES[tostring(set_id)]
         if set_codes == nil then
             ma.Log('Unable to find codes for set ' .. set_id)
         else
             local num_codes = count(set_codes)
-            if num_codes == 0 then progress = progress + set_progress_part end
-            ma.SetProgress(set_name, progress)
-            local code_progress_part = set_progress_part / num_codes
+            if num_codes == 0 then add_progress(set_progress_fraction) end
             for _, set_code in pairs(set_codes) do
-                evaluate_set(set_id, set_code)
-                progress = progress + code_progress_part
-                ma.SetProgress(set_name, progress)
+                evaluate_set(set_id, set_code, set_progress_fraction / num_codes)
             end
         end
     end
