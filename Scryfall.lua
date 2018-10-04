@@ -47,9 +47,10 @@ local function display_string(value)
     ma.SetProgress(g_progress_title, g_progress_value)
 end
 
-local function evaluate_set(ma_set_id, sc_set_code, progress_fraction)
+local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
+    table.sort(sc_set_codes)
+    local url = string.format('%s/cards/search?q=e:%s', MY_API_URL, table.concat(sc_set_codes, ','))
     local more = true
-    local url = string.format('%s/cards/search?q=e:%s', MY_API_URL, sc_set_code)
     while more do
         sleep(100)
 
@@ -94,11 +95,10 @@ function ImportPrice(foil_string, langs_to_import, sets_to_import)
         if set_codes == nil then
             ma.Log(string.format('Unable to find codes for set %s', set_id))
         else
-            local num_codes = count(set_codes)
-            if num_codes == 0 then add_progress(set_progress_fraction) end
-            for _, set_code in pairs(set_codes) do
-                -- TODO pass array of set codes and use e:s1,s2,s3 syntax (do not forget to sort sets)
-                evaluate_set(set_id, set_code, set_progress_fraction / num_codes)
+            if count(set_codes) > 0 then
+                evaluate_set(set_id, set_codes, set_progress_fraction)
+            else
+                add_progress(set_progress_fraction)
             end
         end
     end
