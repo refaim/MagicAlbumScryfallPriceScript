@@ -60,6 +60,8 @@ local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
         if data['object'] == 'error' then error(string.format('Error %s: %s', data['status'], data['details'])) end
 
         for _, card in ipairs(data['data']) do
+            local name = card['name']:gsub(' // ', '|')
+
             -- TODO handle scryfall card language
             local regular_price = card['usd']
             local foil_price = 0
@@ -75,7 +77,6 @@ local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
             end
 
             -- TODO pass lang id
-            -- TODO use name substitution for split cards and stuff
             if ma.SetPrice(ma_set_id, 1, name, '*', regular_price, foil_price, object_type) == 0 then
                 ma.Log(string.format('Unable to set price for card "%s" in "%s" set', name, card['set_name']))
             end
