@@ -29,6 +29,7 @@ local SC_API_URL = 'https://api.scryfall.com'
 local MY_API_URL = 'http://151.248.120.179/api/scryfall'
 
 local SC_SET_CODES = json:decode(read_file('scryfall_set_codes.json'))
+local SC_NAME_REPLACEMENTS = json:decode(read_file('scryfall_name_replacements.json'))
 
 local g_progress_title = ''
 local g_progress_value = 0
@@ -56,7 +57,8 @@ local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
         if data['object'] == 'error' then error(string.format('Error %s: %s', data['status'], data['details'])) end
 
         for _, card in ipairs(data['data']) do
-            local name = card['name']:gsub(' // ', '|')
+            local name = SC_NAME_REPLACEMENTS[card['name']]
+            if name == nil then name = card['name']:gsub(' // ', '|') end
 
             -- TODO handle scryfall card language
             local regular_price = card['usd']
