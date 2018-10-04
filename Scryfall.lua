@@ -12,13 +12,13 @@ local function sleep(ms)
 end
 
 local function read_file(path)
-    local file = ma.GetFile('Prices\\' .. path)
-    if file == nil then error('Unable to load library ' .. path) end
+    local file = ma.GetFile(string.format('Prices\\%s', path))
+    if file == nil then error(string.format('Unable to read file %s', path)) end
     return file
 end
 
 local function load_library(name)
-    local lib, err = load(read_file('lib\\' .. name .. '.lua'))
+    local lib, err = load(read_file(string.format('lib\\%s.lua', name)))
     if err ~= nil then error(err) end
     return lib()
 end
@@ -49,14 +49,14 @@ end
 
 local function evaluate_set(ma_set_id, sc_set_code, progress_fraction)
     local more = true
-    local url = MY_API_URL .. '/cards/search?q=e:' .. sc_set_code
+    local url = string.format('%s/cards/search?q=e:%s', MY_API_URL, sc_set_code)
     while more do
         sleep(100)
 
         local response = ma.GetUrl(url)
-        if response == nil then error('Unable to load ' .. url) end
+        if response == nil then error(string.format('Unable to load %s', url)) end
         local data = json:decode(response)
-        if data['object'] == 'error' then error('Error ' .. data['status'] .. ': ' .. data['details']) end
+        if data['object'] == 'error' then error(string.format('Error %s: %s', data['status'], data['details'])) end
 
         for _, card in ipairs(data['data']) do
             -- TODO handle scryfall card language
@@ -70,7 +70,7 @@ local function evaluate_set(ma_set_id, sc_set_code, progress_fraction)
             local object_type = MA_OBJECT_TYPES[card['object']]
             if object_type == nil then
                 object_type = 0
-                ma.Log('Unknown object type ' .. card['object'] .. ' for card ' .. card['name'] .. ' in set ' .. card['set_name'])
+                ma.Log(string.format('Unknown object type %s for card %s in set %s', card['object'], card['name'], card['set_name']))
             end
 
             -- TODO pass lang id
@@ -92,7 +92,7 @@ function ImportPrice(foil_string, langs_to_import, sets_to_import)
         display_string(set_name)
         local set_codes = SC_SET_CODES[tostring(set_id)]
         if set_codes == nil then
-            ma.Log('Unable to find codes for set ' .. set_id)
+            ma.Log(string.format('Unable to find codes for set %s', set_id))
         else
             local num_codes = count(set_codes)
             if num_codes == 0 then add_progress(set_progress_fraction) end
