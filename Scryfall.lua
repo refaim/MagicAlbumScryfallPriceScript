@@ -29,10 +29,6 @@ local SC_API_URL = 'https://api.scryfall.com'
 local MY_API_URL = 'http://151.248.120.179/api/scryfall'
 
 local SC_SET_CODES = json:decode(read_file('scryfall_set_codes.json'))
--- TODO tokens and stuff
-local MA_OBJECT_TYPES = {
-    card = 1
-}
 
 local g_progress_title = ''
 local g_progress_value = 0
@@ -70,14 +66,8 @@ local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
                 regular_price = 0
             end
 
-            local object_type = MA_OBJECT_TYPES[card['object']]
-            if object_type == nil then
-                object_type = 0
-                ma.Log(string.format('Unknown object type "%s" for card "%s" in "%s" set', card['object'], name, card['set_name']))
-            end
-
             -- TODO pass lang id
-            if ma.SetPrice(ma_set_id, 1, name, '*', regular_price, foil_price, object_type) == 0 then
+            if ma.SetPrice(ma_set_id, 1, name, '*', regular_price, foil_price) == 0 then
                 ma.Log(string.format('Unable to set price for card "%s" in "%s" set', name, card['set_name']))
             end
             add_progress(progress_fraction * 1 / data['total_cards'])
