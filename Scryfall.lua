@@ -28,6 +28,7 @@ local json = load_library('JSON')
 local SC_API_URL = 'https://api.scryfall.com'
 local MY_API_URL = 'http://151.248.120.179/api/scryfall'
 
+-- TODO move resources to separate folder?
 local SC_SET_CODES = json:decode(read_file('scryfall_set_codes.json'))
 local SC_NAME_REPLACEMENTS = json:decode(read_file('scryfall_name_replacements.json'))
 
