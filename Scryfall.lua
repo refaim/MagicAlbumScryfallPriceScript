@@ -26,13 +26,16 @@ end
 
 local json = load_library('JSON')
 
+local function load_resource(name)
+    return json:decode(read_file(string.format('res\\scryfall\\%s.json', name)))
+end
+
 local SC_API_URL = 'https://api.scryfall.com'
 local MY_API_URL = 'http://151.248.120.179/api/scryfall'
 
--- TODO move resources to separate folder?
-local SC_MA_LANGUAGES = json:decode(read_file('scryfall_ma_languages.json'))
-local SC_SET_CODES = json:decode(read_file('scryfall_set_codes.json'))
-local SC_NAME_REPLACEMENTS = json:decode(read_file('scryfall_name_replacements.json'))
+local SC_MA_LANGUAGES = load_resource('ma_languages')
+local SC_SET_CODES = load_resource('set_codes')
+local SC_NAME_REPLACEMENTS = load_resource('name_replacements')
 
 local g_progress_title = ''
 local g_progress_value = 0
