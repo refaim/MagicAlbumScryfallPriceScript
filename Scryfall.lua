@@ -76,13 +76,14 @@ local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
             if name == nil then name = card['name']:gsub(' // ', '|') end
 
             local regular_price = card['usd']
-            local foil_price = 0
-            if card['foil'] and not card['nonfoil'] then
-                foil_price = regular_price
-                regular_price = 0
+            if regular_price ~= nil then
+                local foil_price = 0
+                if card['foil'] and not card['nonfoil'] then
+                    foil_price = regular_price
+                    regular_price = 0
+                end
+                ma.SetPrice(ma_set_id, ma_lang_id, name, '*', regular_price, foil_price)
             end
-
-            ma.SetPrice(ma_set_id, ma_lang_id, name, '*', regular_price, foil_price)
             add_progress(progress_fraction * 1 / data['total_cards'])
         end
 
