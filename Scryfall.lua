@@ -1,3 +1,5 @@
+-- TODO add version and date
+
 local function count(table)
     local result = 0
     for _, _ in pairs(table) do result = result + 1 end
@@ -37,6 +39,11 @@ local SC_MA_LANGUAGES = load_resource('ma_languages')
 local SC_SET_CODES = load_resource('set_codes')
 local SC_NAME_REPLACEMENTS = load_resource('name_replacements')
 
+local CC_KEY = 'EUR_USD'
+local CC_URL = string.format('http://free.currencyconverterapi.com/api/v5/convert?q=%s&compact=y', CC_KEY)
+
+local g_usd_to_eur = nil
+local g_cc_attempt_failed = false
 local g_progress_title = ''
 local g_progress_value = 0
 
@@ -75,8 +82,21 @@ local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
             local name = SC_NAME_REPLACEMENTS[card['name']]
             if name == nil then name = card['name']:gsub(' // ', '|') end
 
-            local regular_price = card['usd']
-            -- TODO if usd not set, try to look on eur and convert to usd
+            local usd = card['usd']
+            local eur = card['eur']
+            if usd == nil and eur ~= nil and not g_cc_attempt_failed then
+                if g_usd_to_eur == nil then
+                    local cc_response = ma.GetUrl(CC_URL)
+                    if cc_response ~= nil then
+                        g_usd_to_eur = json:decode(cc_response)[CC_KEY]['val']
+                    else
+                        g_cc_attempt_failed = true
+                    end
+                end
+                if g_usd_to_eur ~= nil then usd = eur * g_usd_to_eur end
+            end
+
+            local regular_price = usd
             if regular_price ~= nil then
                 local foil_price = 0
                 if card['foil'] and not card['nonfoil'] then
