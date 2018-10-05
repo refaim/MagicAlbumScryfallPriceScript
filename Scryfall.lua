@@ -47,15 +47,19 @@ local g_cc_attempt_failed = false
 local g_progress_title = ''
 local g_progress_value = 0
 
-local function add_progress(value)
-    g_progress_value = g_progress_value + value
-    ma.SetProgress(g_progress_title, g_progress_value)
+local function print_progress()
+    ma.SetProgress(string.format('%s (%d%%)', g_progress_title, g_progress_value), g_progress_value)
 end
 
--- TODO display percentage and ETA
+local function add_progress(value)
+    g_progress_value = g_progress_value + value
+    print_progress()
+end
+
+-- TODO display ETA
 local function display_string(value)
     g_progress_title = value
-    ma.SetProgress(g_progress_title, g_progress_value)
+    print_progress()
 end
 
 local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
