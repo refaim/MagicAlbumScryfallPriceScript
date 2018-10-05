@@ -47,8 +47,10 @@ local g_cc_attempt_failed = false
 local g_progress_title = ''
 local g_progress_value = 0
 
+-- TODO display (really display) 100% when all work is done
 local function print_progress()
-    ma.SetProgress(string.format('%s (%d%%)', g_progress_title, g_progress_value), g_progress_value)
+    local value = math.ceil(g_progress_value)
+    ma.SetProgress(string.format('%s (%d%%)', g_progress_title, value), value)
 end
 
 local function add_progress(value)
