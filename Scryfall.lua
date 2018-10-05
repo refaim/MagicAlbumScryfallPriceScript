@@ -30,6 +30,7 @@ local SC_API_URL = 'https://api.scryfall.com'
 local MY_API_URL = 'http://151.248.120.179/api/scryfall'
 
 -- TODO move resources to separate folder?
+local SC_MA_LANGUAGES = json:decode(read_file('scryfall_ma_languages.json'))
 local SC_SET_CODES = json:decode(read_file('scryfall_set_codes.json'))
 local SC_NAME_REPLACEMENTS = json:decode(read_file('scryfall_name_replacements.json'))
 
@@ -62,10 +63,15 @@ local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
         -- TODO support lands
         -- TODO support tokens
         for _, card in ipairs(data['data']) do
+            local ma_lang_id = SC_MA_LANGUAGES[card['lang']]
+            if ma_lang_id == nil then
+                ma.Log(string.format('Unhandled language %s', card['lang']))
+                ma_lang_id = SC_MA_LANGUAGES['en']
+            end
+
             local name = SC_NAME_REPLACEMENTS[card['name']]
             if name == nil then name = card['name']:gsub(' // ', '|') end
 
-            -- TODO handle scryfall card language
             local regular_price = card['usd']
             local foil_price = 0
             if card['foil'] and not card['nonfoil'] then
@@ -73,8 +79,7 @@ local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
                 regular_price = 0
             end
 
-            -- TODO pass lang id
-            ma.SetPrice(ma_set_id, 1, name, '*', regular_price, foil_price)
+            ma.SetPrice(ma_set_id, ma_lang_id, name, '*', regular_price, foil_price)
             add_progress(progress_fraction * 1 / data['total_cards'])
         end
 
@@ -83,8 +88,16 @@ local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
     end
 end
 
--- TODO handle langs_to_import, foil_string
+-- TODO handle foil_string
 function ImportPrice(foil_string, langs_to_import, sets_to_import)
+    for _, v in pairs(langs_to_import) do
+        if v ~= nil and v ~= 'English' then
+            display_string('Only English language is supported')
+            sleep(300)
+            return
+        end
+    end
+
     local set_progress_fraction = 100.0 / count(sets_to_import)
     for set_id, set_name in pairs(sets_to_import) do
         display_string(set_name)
