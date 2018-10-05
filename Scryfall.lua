@@ -78,6 +78,8 @@ local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
 
         -- TODO support lands
         -- TODO support tokens
+        -- TODO support planes
+        -- TODO support schemes
         for _, card in ipairs(data['data']) do
             local ma_lang_id = SC_MA_LANGUAGES[card['lang']]
             if ma_lang_id == nil then
@@ -109,6 +111,8 @@ local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
                     foil_price = regular_price
                     regular_price = 0
                 end
+                -- TODO https://scryfall.com/card/10e/361%E2%98%85/treetop-village
+                -- TODO https://scryfall.com/card/pbfz/2s/blight-herder (and others)
                 ma.SetPrice(ma_set_id, ma_lang_id, name, '*', regular_price, foil_price)
             end
             add_progress(progress_fraction * 1 / data['total_cards'])
