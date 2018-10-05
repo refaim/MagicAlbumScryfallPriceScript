@@ -4,6 +4,7 @@ local function count(table)
     return result
 end
 
+-- TODO use ma.GetTime when it's released
 local function sleep(ms)
     local t = ms * 1250000
     local s = 0
@@ -40,6 +41,7 @@ local function add_progress(value)
     ma.SetProgress(g_progress_title, g_progress_value)
 end
 
+-- TODO display percentage and ETA
 local function display_string(value)
     g_progress_title = value
     ma.SetProgress(g_progress_title, g_progress_value)
@@ -77,7 +79,7 @@ local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
         end
 
         more = data['has_more']
-        if more then url = string.gsub(data['next_page'], SC_API_URL, MY_API_URL) end
+        if more then url = data['next_page']:gsub(SC_API_URL, MY_API_URL) end
     end
 end
 
