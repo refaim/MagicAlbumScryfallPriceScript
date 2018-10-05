@@ -107,14 +107,11 @@ function ImportPrice(foil_string, langs_to_import, sets_to_import)
         display_string(set_name)
         -- TODO map all scryfall sets
         local set_codes = SC_SET_CODES[tostring(set_id)]
-        if set_codes == nil then
-            ma.Log(string.format('Unable to find codes for set %s', set_id))
+        if set_codes ~= nil and count(set_codes) > 0 then
+            evaluate_set(set_id, set_codes, set_progress_fraction)
         else
-            if count(set_codes) > 0 then
-                evaluate_set(set_id, set_codes, set_progress_fraction)
-            else
-                add_progress(set_progress_fraction)
-            end
+            ma.Log(string.format('Unable to find codes for set %s', set_id))
+            add_progress(set_progress_fraction)
         end
     end
 end
