@@ -57,6 +57,8 @@ local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
         local data = json:decode(response)
         if data['object'] == 'error' then error(string.format('Error %s: %s', data['status'], data['details'])) end
 
+        -- TODO support lands
+        -- TODO support tokens
         for _, card in ipairs(data['data']) do
             local name = SC_NAME_REPLACEMENTS[card['name']]
             if name == nil then name = card['name']:gsub(' // ', '|') end
@@ -70,9 +72,7 @@ local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
             end
 
             -- TODO pass lang id
-            if ma.SetPrice(ma_set_id, 1, name, '*', regular_price, foil_price) == 0 then
-                ma.Log(string.format('Unable to set price for card "%s" in "%s" set', name, card['set_name']))
-            end
+            ma.SetPrice(ma_set_id, 1, name, '*', regular_price, foil_price)
             add_progress(progress_fraction * 1 / data['total_cards'])
         end
 
@@ -86,6 +86,7 @@ function ImportPrice(foil_string, langs_to_import, sets_to_import)
     local set_progress_fraction = 100.0 / count(sets_to_import)
     for set_id, set_name in pairs(sets_to_import) do
         display_string(set_name)
+        -- TODO map all scryfall sets
         local set_codes = SC_SET_CODES[tostring(set_id)]
         if set_codes == nil then
             ma.Log(string.format('Unable to find codes for set %s', set_id))
