@@ -53,7 +53,7 @@ end
 
 local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
     table.sort(sc_set_codes)
-    local url = string.format('%s/cards/search?q=e:%s', MY_API_URL, table.concat(sc_set_codes, ','))
+    local url = string.format('%s/cards/search?q=e:%s&unique=prints', MY_API_URL, table.concat(sc_set_codes, ','))
     local more = true
     while more do
         sleep(100)
@@ -76,6 +76,7 @@ local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
             if name == nil then name = card['name']:gsub(' // ', '|') end
 
             local regular_price = card['usd']
+            -- TODO if usd not set, try to look on eur and convert to usd
             if regular_price ~= nil then
                 local foil_price = 0
                 if card['foil'] and not card['nonfoil'] then
