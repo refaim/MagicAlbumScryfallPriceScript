@@ -106,6 +106,7 @@ function ImportPrice(foil_string, langs_to_import, sets_to_import)
     for set_id, set_name in pairs(sets_to_import) do
         display_string(set_name)
         -- TODO map all scryfall sets
+        -- TODO map all MA cards without price
         local set_codes = SC_SET_CODES[tostring(set_id)]
         if set_codes ~= nil and count(set_codes) > 0 then
             evaluate_set(set_id, set_codes, set_progress_fraction)
