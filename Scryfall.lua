@@ -90,8 +90,8 @@ local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
             local name = SC_NAME_REPLACEMENTS[card['name']]
             if name == nil then name = card['name']:gsub(' // ', '|') end
 
-            local usd = card['usd']
-            local eur = card['eur']
+            local usd = tonumber(card['usd'])
+            local eur = tonumber(card['eur'])
             if usd == nil and eur ~= nil and not g_cc_attempt_failed then
                 if g_usd_to_eur == nil then
                     local cc_response = ma.GetUrl(CC_URL)
