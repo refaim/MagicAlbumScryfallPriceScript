@@ -107,14 +107,16 @@ local function evaluate_set(ma_set_id, sc_set_codes, import_regular, import_foil
             local regular_price = usd
             if regular_price ~= nil then
                 local foil_price = 0
-                if import_foil and card['foil'] and not card['nonfoil'] then foil_price = regular_price end
+                if import_foil and card['foil'] and not card['nonfoil'] then
+                    foil_price = regular_price
+                    regular_price = 0
+                end
                 if not import_regular then regular_price = 0 end
                 if not import_foil then foil_price = 0 end
 
                 if regular_price > 0 or foil_price > 0 then
-                    local number = card['collector_number']
                     local version = '*'
-                    local version_letter = number:match('^%d+(%a)$')
+                    local version_letter = card['collector_number']:match('^%d+(%a)$')
                     if version_letter ~= nil then version = version_letter:byte() - string.byte('a') + 1 end
                     -- TODO https://scryfall.com/card/10e/361%E2%98%85/treetop-village
                     -- TODO https://scryfall.com/card/pbfz/2s/blight-herder (and others)
