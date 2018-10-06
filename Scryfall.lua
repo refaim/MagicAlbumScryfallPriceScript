@@ -64,7 +64,7 @@ local function display_string(value)
     print_progress()
 end
 
-local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
+local function evaluate_set(ma_set_id, sc_set_codes, import_regular, import_foil, progress_fraction)
     table.sort(sc_set_codes)
     local url = string.format('%s/cards/search?q=e:%s&unique=prints', MY_API_URL, table.concat(sc_set_codes, ','))
     local more = true
@@ -107,13 +107,16 @@ local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
             local regular_price = usd
             if regular_price ~= nil then
                 local foil_price = 0
-                if card['foil'] and not card['nonfoil'] then
-                    foil_price = regular_price
-                    regular_price = 0
+                if import_foil and card['foil'] and not card['nonfoil'] then foil_price = regular_price end
+                if not import_regular then regular_price = 0 end
+                if not import_foil then foil_price = 0 end
+
+                if regular_price > 0 or foil_price > 0 then
+                    -- TODO https://scryfall.com/card/10e/361%E2%98%85/treetop-village
+                    -- TODO https://scryfall.com/card/pbfz/2s/blight-herder (and others)
+                    -- TODO pass card version
+                    ma.SetPrice(ma_set_id, ma_lang_id, name, '*', regular_price, foil_price)
                 end
-                -- TODO https://scryfall.com/card/10e/361%E2%98%85/treetop-village
-                -- TODO https://scryfall.com/card/pbfz/2s/blight-herder (and others)
-                ma.SetPrice(ma_set_id, ma_lang_id, name, '*', regular_price, foil_price)
             end
             add_progress(progress_fraction * 1 / data['total_cards'])
         end
@@ -123,8 +126,10 @@ local function evaluate_set(ma_set_id, sc_set_codes, progress_fraction)
     end
 end
 
--- TODO handle foil_string
 function ImportPrice(foil_string, langs_to_import, sets_to_import)
+    local import_foil = foil_string == "Y" or foil_string == "O"
+    local import_regular = foil_string == "Y" or foil_string == "N"
+
     for _, v in pairs(langs_to_import) do
         if v ~= nil and v ~= 'English' then
             display_string('Only English language is supported')
@@ -140,7 +145,7 @@ function ImportPrice(foil_string, langs_to_import, sets_to_import)
         -- TODO map all MA cards without price
         local set_codes = SC_SET_CODES[tostring(set_id)]
         if set_codes ~= nil and count(set_codes) > 0 then
-            evaluate_set(set_id, set_codes, set_progress_fraction)
+            evaluate_set(set_id, set_codes, import_regular, import_foil, set_progress_fraction)
         else
             ma.Log(string.format('Unable to find codes for set %s', set_id))
             add_progress(set_progress_fraction)
