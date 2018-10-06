@@ -42,7 +42,7 @@ local SC_NAME_REPLACEMENTS = load_resource('name_replacements')
 local CC_KEY = 'EUR_USD'
 local CC_URL = string.format('http://free.currencyconverterapi.com/api/v5/convert?q=%s&compact=y', CC_KEY)
 
-local g_usd_to_eur = nil
+local g_eur_to_usd = nil
 local g_cc_attempt_failed = false
 local g_progress_title = ''
 local g_progress_value = 0
@@ -93,15 +93,15 @@ local function evaluate_set(ma_set_id, sc_set_codes, import_regular, import_foil
             local usd = tonumber(card['usd'])
             local eur = tonumber(card['eur'])
             if usd == nil and eur ~= nil and not g_cc_attempt_failed then
-                if g_usd_to_eur == nil then
+                if g_eur_to_usd == nil then
                     local cc_response = ma.GetUrl(CC_URL)
                     if cc_response ~= nil then
-                        g_usd_to_eur = json:decode(cc_response)[CC_KEY]['val']
+                        g_eur_to_usd = json:decode(cc_response)[CC_KEY]['val']
                     else
                         g_cc_attempt_failed = true
                     end
                 end
-                if g_usd_to_eur ~= nil then usd = eur * g_usd_to_eur end
+                if g_eur_to_usd ~= nil then usd = eur * g_eur_to_usd end
             end
 
             local regular_price = usd
