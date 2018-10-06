@@ -118,7 +118,7 @@ local function evaluate_set(ma_set_id, sc_set_codes, import_regular, import_foil
                     ma.SetPrice(ma_set_id, ma_lang_id, name, '*', regular_price, foil_price)
                 end
             end
-            add_progress(progress_fraction * 1 / data['total_cards'])
+            add_progress(progress_fraction / data['total_cards'])
         end
 
         more = data['has_more']
